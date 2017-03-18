@@ -1,6 +1,13 @@
 "use strict";
 const React = require('react');
 const defaultStyles_1 = require('./defaultStyles');
+var KeyCode;
+(function (KeyCode) {
+    KeyCode[KeyCode["ARROW_UP"] = 38] = "ARROW_UP";
+    KeyCode[KeyCode["ARROW_DOWN"] = 40] = "ARROW_DOWN";
+    KeyCode[KeyCode["ENTER_KEY"] = 13] = "ENTER_KEY";
+    KeyCode[KeyCode["ESC_KEY"] = 27] = "ESC_KEY";
+})(KeyCode || (KeyCode = {}));
 class Autocomplete extends React.Component {
     constructor() {
         super(...arguments);
@@ -55,24 +62,20 @@ class Autocomplete extends React.Component {
             }
         };
         this.handleInputKeyDown = (event) => {
-            const ARROW_UP = 38;
-            const ARROW_DOWN = 40;
-            const ENTER_KEY = 13;
-            const ESC_KEY = 27;
             switch (event.keyCode) {
-                case ENTER_KEY:
+                case KeyCode.ENTER_KEY:
                     event.preventDefault();
                     this.handleEnterKey();
                     break;
-                case ARROW_DOWN:
+                case KeyCode.ARROW_DOWN:
                     event.preventDefault();
                     this.handleDownKey();
                     break;
-                case ARROW_UP:
+                case KeyCode.ARROW_UP:
                     event.preventDefault();
                     this.handleUpKey();
                     break;
-                case ESC_KEY:
+                case KeyCode.ESC_KEY:
                     this.clearAutocomplete();
                     break;
             }
@@ -89,11 +92,11 @@ class Autocomplete extends React.Component {
             this.setState({ suggestions });
         };
         this.handleChange = (event) => {
-            const value = event.target.value;
+            const value = event.currentTarget.value;
+            this.props.onChange(value);
             if (this.timer) {
                 clearTimeout(this.timer);
             }
-            this.props.onChange(value);
             if (!value) {
                 this.clearAutocomplete();
                 return;
@@ -119,7 +122,7 @@ class Autocomplete extends React.Component {
         };
         this.renderInput = () => {
             const { classNames, placeholder, value, inputName, inputId } = this.props;
-            return (React.createElement("input", {type: "text", placeholder: placeholder, className: classNames || '', style: defaultStyles_1.default.autocompleteInput, value: value, onChange: this.handleChange, onKeyDown: this.handleInputKeyDown, onBlur: () => this.clearAutocomplete(), name: inputName || '', id: inputId || ''}));
+            return (React.createElement("input", {type: "text", placeholder: placeholder, className: classNames || '', style: defaultStyles_1.default.autocompleteInput, value: value || '', onChange: this.handleChange, onKeyDown: this.handleInputKeyDown, onBlur: () => this.clearAutocomplete(), name: inputName || '', id: inputId || ''}));
         };
     }
     componentWillReceiveProps(nextProps) {
@@ -129,7 +132,6 @@ class Autocomplete extends React.Component {
     }
     ;
     render() {
-        const { classNames } = this.props;
         return (React.createElement("div", {style: defaultStyles_1.default.root}, 
             this.renderInput(), 
             this.renderAutocomplete()));

@@ -2,6 +2,7 @@ import { observable, action } from 'mobx'
 import axios from 'axios'
 import {URL} from '../config';
 import ICountry from '../models/ICountry';
+import {AxiosResponse} from "axios";
 
 export default class AppState {
     @observable values: ICountry[];
@@ -10,14 +11,13 @@ export default class AppState {
         this.values = [];
     }
 
-    @action getCountries = async (value: string) => {
+    @action getCountries = async (value: string): Promise<void> => {
         try {
-            const {data} = await axios.get(`${URL}/name/${value}`);
-            console.log(data);
+            const {data}: AxiosResponse = await axios.get(`${URL}/name/${value}`);
             this.values = data;
         } catch (err) {
             try {
-                const {data} = await axios.get(`${URL}/alpha/${value}`);
+                const {data}: AxiosResponse = await axios.get(`${URL}/alpha/${value}`);
                 this.values = data;
             } catch (err) {
                 this.values = [];

@@ -21,7 +21,6 @@ class AppState {
         this.getCountries = (value) => __awaiter(this, void 0, void 0, function* () {
             try {
                 const { data } = yield axios_1.default.get(`${config_1.URL}/name/${value}`);
-                console.log(data);
                 this.values = data;
             }
             catch (err) {

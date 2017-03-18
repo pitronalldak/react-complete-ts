@@ -20,7 +20,7 @@ const defaultStyles = {
     },
     autocompleteItem: {
         backgroundColor: '#ffffff',
-        padding: '10px',
+        padding: '5px',
         color: '#555',
         cursor: 'pointer',
     },

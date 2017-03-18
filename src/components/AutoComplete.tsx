@@ -2,7 +2,7 @@ import * as React from 'react';
 import defaultStyles from './defaultStyles';
 
 interface IProps {
-    onChange?: (value: string) => void;
+    onChange: (value: string) => void;
     onSelect?: (value: string) => void;
     action: (value: any) => void;
     suggestions: any[];
@@ -21,45 +21,52 @@ interface IState {
     index?: number;
 }
 
-class Autocomplete extends React.Component<IProps, IState> {
-    state = { suggestions: [], index: undefined };
-    timer = 0;
+enum KeyCode {
+    ARROW_UP = 38,
+    ARROW_DOWN = 40,
+    ENTER_KEY = 13,
+    ESC_KEY = 27,
+}
 
-    componentWillReceiveProps(nextProps: IProps) {
+class Autocomplete extends React.Component<IProps, IState> {
+    state: IState = { suggestions: [], index: undefined };
+    timer: number = 0;
+
+    componentWillReceiveProps(nextProps: IProps): void {
         if(nextProps.suggestions !== this.props.suggestions) {
             this.setState({suggestions: nextProps.suggestions.slice(0, this.props.limit), index: undefined});
         }
     };
 
-    clearAutocomplete = () => {
+    clearAutocomplete = (): void => {
         this.setState({ suggestions: [] })
     };
 
-    selectValue = (suggestion: any) => {
+    selectValue = (suggestion: any): void => {
         this.clearAutocomplete();
         this.handleSelect(suggestion)
     };
 
-    handleSelect = (suggestion: any) => {
+    handleSelect = (suggestion: any): void => {
         this.props.onSelect ? this.props.onSelect(suggestion) : this.props.onChange(suggestion.name)
     };
 
-    selectActiveItemAtIndex = (index: number) => {
-        const suggestion = this.state.suggestions[index];
+    selectActiveItemAtIndex = (index: number): void => {
+        const suggestion: any = this.state.suggestions[index];
         this.setActiveItemAtIndex(index);
         this.setState({index});
         this.props.onChange(suggestion.name)
     };
 
-    handleEnterKey = () => {
-        const index = this.state.index;
+    handleEnterKey = (): void => {
+        const index: number = this.state.index;
         if (index !== undefined) {
             this.selectValue(this.state.suggestions[index])
         }
     };
 
-    handleDownKey = () => {
-        const index = this.state.index;
+    handleDownKey = (): void => {
+        const index: number = this.state.index;
         if (index === undefined) {
             this.selectActiveItemAtIndex(0)
         } else {
@@ -68,12 +75,12 @@ class Autocomplete extends React.Component<IProps, IState> {
         }
     };
 
-    handleUpKey = () => {
-        const index = this.state.index;
+    handleUpKey = (): void => {
+        const index: number = this.state.index;
         if (index === undefined) {
             this.selectActiveItemAtIndex(this.state.suggestions.length - 1)
         } else {
-            let prevIndex;
+            let prevIndex: number;
             if (index === 0) {
                 prevIndex = this.state.suggestions.length - 1
             } else {
@@ -83,33 +90,29 @@ class Autocomplete extends React.Component<IProps, IState> {
         }
     };
 
-    handleInputKeyDown = (event) => {
-        const ARROW_UP = 38;
-        const ARROW_DOWN = 40;
-        const ENTER_KEY = 13;
-        const ESC_KEY = 27;
+    handleInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>): void => {
 
         switch (event.keyCode) {
-            case ENTER_KEY:
+            case KeyCode.ENTER_KEY:
                 event.preventDefault();
                 this.handleEnterKey();
                 break;
-            case ARROW_DOWN:
+            case KeyCode.ARROW_DOWN:
                 event.preventDefault();
                 this.handleDownKey();
                 break;
-            case ARROW_UP:
+            case KeyCode.ARROW_UP:
                 event.preventDefault();
                 this.handleUpKey();
                 break;
-            case ESC_KEY:
+            case KeyCode.ESC_KEY:
                 this.clearAutocomplete();
                 break
         }
     };
 
-    setActiveItemAtIndex = (index) => {
-        const suggestions = this.state.suggestions.map((item, key) => {
+    setActiveItemAtIndex = (index: number): void => {
+        const suggestions: any = this.state.suggestions.map((item, key) => {
             if (key === index) {
                 return Object.assign({}, item, { active: true })
             } else {
@@ -119,13 +122,12 @@ class Autocomplete extends React.Component<IProps, IState> {
         this.setState({suggestions});
     };
 
-    handleChange = (event) => {
-        const value = event.target.value;
+    handleChange = (event: React.FormEvent<HTMLInputElement>): void => {
+        const value: string = event.currentTarget.value;
+        this.props.onChange(value);
         if (this.timer) {
-            // There is a running timer from a previous keyup
             clearTimeout(this.timer);
         }
-        this.props.onChange(value);
         if (!value) {
             this.clearAutocomplete();
             return
@@ -135,7 +137,7 @@ class Autocomplete extends React.Component<IProps, IState> {
         }, 300)
     };
 
-    autocompleteItemStyle = (active) => {
+    autocompleteItemStyle = (active: boolean): {} => {
         if (active) {
 
             return defaultStyles.autocompleteItemActive
@@ -144,8 +146,8 @@ class Autocomplete extends React.Component<IProps, IState> {
         }
     };
 
-    renderAutocomplete = () => {
-        const { suggestions } = this.state;
+    renderAutocomplete = (): JSX.Element => {
+        const { suggestions }: IState = this.state;
         if (suggestions.length === 0) { return null }
         return (
             <div
@@ -165,15 +167,15 @@ class Autocomplete extends React.Component<IProps, IState> {
         )
     };
 
-    renderInput = () => {
-        const { classNames, placeholder, value, inputName, inputId } = this.props;
+    renderInput = (): JSX.Element => {
+        const { classNames, placeholder, value, inputName, inputId }: IProps = this.props;
         return (
             <input
                 type="text"
                 placeholder={placeholder}
                 className={classNames || ''}
                 style={defaultStyles.autocompleteInput}
-                value={value}
+                value={value || ''}
                 onChange={this.handleChange}
                 onKeyDown={this.handleInputKeyDown}
                 onBlur={() => this.clearAutocomplete()}
@@ -184,7 +186,6 @@ class Autocomplete extends React.Component<IProps, IState> {
     };
 
     render() {
-        const { classNames } = this.props;
         return (
             <div style={defaultStyles.root}>
                 {this.renderInput()}

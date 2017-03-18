@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { inject, observer } from 'mobx-react'
+import { observer } from 'mobx-react'
 
 import Autocomplete from './components/AutoComplete';
 
@@ -14,12 +14,12 @@ interface IState {
 class AppView extends React.Component<{store: AppState}, IState> {
     state = {value: undefined};
 
-    handleOnChange = (value: string) => {
+    handleOnChange = (value: string): void => {
         this.setState({value});
     };
 
     render() {
-        const {value} = this.state;
+        const {value}: IState = this.state;
         return (
             <div style={{width: '200px'}}>
                <Autocomplete
