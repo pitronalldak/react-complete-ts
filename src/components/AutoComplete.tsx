@@ -55,7 +55,7 @@ class Autocomplete extends React.Component<IProps, IState> {
         const suggestion: any = this.state.suggestions[index];
         this.setActiveItemAtIndex(index);
         this.setState({index});
-        this.props.onChange(suggestion.name)
+        this.props.onChange(suggestion.name);
     };
 
     handleEnterKey = (): void => {
