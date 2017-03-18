@@ -4,12 +4,11 @@ import defaultStyles from './defaultStyles';
 interface IProps {
     onChange: (value: string) => void;
     onSelect?: (value: string) => void;
-    action: (value: any) => void;
+    action: (value: string) => void;
     suggestions: any[];
-    classNames?: any;
-    styles?: any;
+    classNames?: string;
     placeholder?: string;
-    value?: any;
+    value?: string;
     inputName?: string;
     inputId?: string;
     debounce: number;
