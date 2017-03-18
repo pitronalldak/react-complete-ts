@@ -4,7 +4,7 @@ const defaultStyles_1 = require('./defaultStyles');
 class Autocomplete extends React.Component {
     constructor() {
         super(...arguments);
-        this.state = { suggestions: [] };
+        this.state = { suggestions: [], index: undefined };
         this.timer = 0;
         this.clearAutocomplete = () => {
             this.setState({ suggestions: [] });
@@ -14,15 +14,45 @@ class Autocomplete extends React.Component {
             this.handleSelect(suggestion);
         };
         this.handleSelect = (suggestion) => {
-            this.props.onSelect ? this.props.onSelect(suggestion) : this.props.onChange(suggestion);
-        };
-        this.getActiveItem = () => {
-            return this.state.suggestions.find(item => item.active);
+            this.props.onSelect ? this.props.onSelect(suggestion) : this.props.onChange(suggestion.name);
         };
         this.selectActiveItemAtIndex = (index) => {
-            const suggestion = this.state.suggestions.find(item => item.index === index);
+            const suggestion = this.state.suggestions[index];
             this.setActiveItemAtIndex(index);
-            this.props.onChange(suggestion);
+            this.setState({ index });
+            this.props.onChange(suggestion.name);
+        };
+        this.handleEnterKey = () => {
+            const index = this.state.index;
+            if (index !== undefined) {
+                this.selectValue(this.state.suggestions[index]);
+            }
+        };
+        this.handleDownKey = () => {
+            const index = this.state.index;
+            if (index === undefined) {
+                this.selectActiveItemAtIndex(0);
+            }
+            else {
+                const nextIndex = (index + 1) % this.state.suggestions.length;
+                this.selectActiveItemAtIndex(nextIndex);
+            }
+        };
+        this.handleUpKey = () => {
+            const index = this.state.index;
+            if (index === undefined) {
+                this.selectActiveItemAtIndex(this.state.suggestions.length - 1);
+            }
+            else {
+                let prevIndex;
+                if (index === 0) {
+                    prevIndex = this.state.suggestions.length - 1;
+                }
+                else {
+                    prevIndex = (index - 1) % this.state.suggestions.length;
+                }
+                this.selectActiveItemAtIndex(prevIndex);
+            }
         };
         this.handleInputKeyDown = (event) => {
             const ARROW_UP = 38;
@@ -48,12 +78,12 @@ class Autocomplete extends React.Component {
             }
         };
         this.setActiveItemAtIndex = (index) => {
-            const suggestions = this.state.suggestions.map((item, idx) => {
-                if (idx === index) {
-                    return Object.assign({}, { item, active: true });
+            const suggestions = this.state.suggestions.map((item, key) => {
+                if (key === index) {
+                    return Object.assign({}, item, { active: true });
                 }
                 else {
-                    return Object.assign({}, { item, active: false });
+                    return Object.assign({}, item, { active: false });
                 }
             });
             this.setState({ suggestions });
@@ -85,45 +115,19 @@ class Autocomplete extends React.Component {
             if (suggestions.length === 0) {
                 return null;
             }
-            return (React.createElement("div", {className: this.props.classNames.autocompleteContainer || '', style: defaultStyles_1.default.autocompleteContainer}, suggestions.map((p, key) => (React.createElement("div", {key: key, onMouseOver: () => this.setActiveItemAtIndex(p.index), onMouseDown: () => this.selectValue(p.suggestion), style: Object.assign({}, defaultStyles_1.default.autocompleteItem, this.autocompleteItemStyle(p.active))}, p.suggestion)))));
+            return (React.createElement("div", {style: defaultStyles_1.default.autocompleteContainer}, suggestions.map((p, key) => (React.createElement("div", {key: key, onMouseOver: () => this.setActiveItemAtIndex(key), onMouseDown: () => this.selectValue(p), style: Object.assign({}, defaultStyles_1.default.autocompleteItem, this.autocompleteItemStyle(p.active))}, p.name)))));
         };
         this.renderInput = () => {
             const { classNames, placeholder, value, inputName, inputId } = this.props;
-            return (React.createElement("input", {type: "text", placeholder: placeholder, className: classNames || '', value: value, onChange: this.handleChange, onKeyDown: this.handleInputKeyDown, onBlur: () => this.clearAutocomplete(), name: inputName || '', id: inputId || ''}));
+            return (React.createElement("input", {type: "text", placeholder: placeholder, className: classNames || '', style: defaultStyles_1.default.autocompleteInput, value: value, onChange: this.handleChange, onKeyDown: this.handleInputKeyDown, onBlur: () => this.clearAutocomplete(), name: inputName || '', id: inputId || ''}));
         };
     }
-    handleEnterKey() {
-        const activeItem = this.getActiveItem();
-        if (activeItem !== undefined) {
-            this.selectValue(activeItem);
+    componentWillReceiveProps(nextProps) {
+        if (nextProps.suggestions !== this.props.suggestions) {
+            this.setState({ suggestions: nextProps.suggestions.slice(0, this.props.limit), index: undefined });
         }
     }
-    handleDownKey() {
-        const activeItem = this.getActiveItem();
-        if (activeItem === undefined) {
-            this.selectActiveItemAtIndex(0);
-        }
-        else {
-            const nextIndex = (activeItem.index + 1) % this.state.suggestions.length;
-            this.selectActiveItemAtIndex(nextIndex);
-        }
-    }
-    handleUpKey() {
-        const activeItem = this.getActiveItem();
-        if (activeItem === undefined) {
-            this.selectActiveItemAtIndex(this.state.suggestions.length - 1);
-        }
-        else {
-            let prevIndex;
-            if (activeItem.index === 0) {
-                prevIndex = this.state.suggestions.length - 1;
-            }
-            else {
-                prevIndex = (activeItem.index - 1) % this.state.suggestions.length;
-            }
-            this.selectActiveItemAtIndex(prevIndex);
-        }
-    }
+    ;
     render() {
         const { classNames } = this.props;
         return (React.createElement("div", {style: defaultStyles_1.default.root}, 

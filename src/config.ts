@@ -1,1 +1,1 @@
-export const URL = 'https://restcountries.eu/rest/v2/name/';
+export const URL = 'https://restcountries.eu/rest/v2';

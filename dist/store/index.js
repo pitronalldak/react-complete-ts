@@ -18,17 +18,23 @@ const axios_1 = require('axios');
 const config_1 = require('../config');
 class AppState {
     constructor() {
-        this.values = [];
-    }
-    getCountries(value) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let { data } = yield axios_1.default.get(`${config_1.URL}${value}`);
-            console.log(data);
-            this.setCountryList(data);
+        this.getCountries = (value) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { data } = yield axios_1.default.get(`${config_1.URL}/name/${value}`);
+                console.log(data);
+                this.values = data;
+            }
+            catch (err) {
+                try {
+                    const { data } = yield axios_1.default.get(`${config_1.URL}/alpha/${value}`);
+                    this.values = data;
+                }
+                catch (err) {
+                    this.values = [];
+                }
+            }
         });
-    }
-    setCountryList(data) {
-        this.values = data;
+        this.values = [];
     }
 }
 __decorate([
@@ -36,6 +42,6 @@ __decorate([
 ], AppState.prototype, "values", void 0);
 __decorate([
     mobx_1.action
-], AppState.prototype, "setCountryList", null);
+], AppState.prototype, "getCountries", void 0);
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = AppState;

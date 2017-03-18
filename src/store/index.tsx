@@ -1,22 +1,27 @@
 import { observable, action } from 'mobx'
 import axios from 'axios'
 import {URL} from '../config';
+import ICountry from '../models/ICountry';
 
 export default class AppState {
-    @observable values;
+    @observable values: ICountry[];
 
     constructor() {
         this.values = [];
     }
 
-    async getCountries(value: string) {
-        let {data} = await axios.get(`${URL}${value}`);
-        console.log(data)
-        this.setCountryList(data);
-    }
-
-    @action setCountryList(data) {
-        this.values = data;
-    }
-
+    @action getCountries = async (value: string) => {
+        try {
+            const {data} = await axios.get(`${URL}/name/${value}`);
+            console.log(data);
+            this.values = data;
+        } catch (err) {
+            try {
+                const {data} = await axios.get(`${URL}/alpha/${value}`);
+                this.values = data;
+            } catch (err) {
+                this.values = [];
+            }
+        }
+    };
 }

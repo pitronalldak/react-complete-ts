@@ -20,8 +20,8 @@ let AppView = class AppView extends React.Component {
     }
     render() {
         const { value } = this.state;
-        return (React.createElement("div", null, 
-            React.createElement(AutoComplete_1.default, {action: this.props.store.getCountries, onChange: this.handleOnChange, value: value, suggestions: this.props.store.values})
+        return (React.createElement("div", {style: { width: '200px' }}, 
+            React.createElement(AutoComplete_1.default, {action: this.props.store.getCountries, onChange: this.handleOnChange, value: value, suggestions: this.props.store.values, debounce: 300, limit: 10})
         ));
     }
 };

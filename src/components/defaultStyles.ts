@@ -3,6 +3,13 @@ const defaultStyles = {
         position: 'relative',
         paddingBottom: '0px',
     },
+    autocompleteInput: {
+        top: '100%',
+        height: '24px',
+        backgroundColor: 'white',
+        border: '1px solid #555',
+        width: '100%',
+    },
     autocompleteContainer: {
         position: 'absolute',
         top: '100%',

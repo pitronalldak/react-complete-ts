@@ -1,94 +1,93 @@
 import * as React from 'react';
 import defaultStyles from './defaultStyles';
 
-/**
- * @prop {Function} onChange Callback function when value changed.
- * @prop {Function} onSelect Callback function when value selected.
- */
 interface IProps {
     onChange?: (value: string) => void;
     onSelect?: (value: string) => void;
     action: (value: any) => void;
-    suggestions: string[];
+    suggestions: any[];
     classNames?: any;
     styles?: any;
     placeholder?: string;
     value?: any;
     inputName?: string;
     inputId?: string;
+    debounce: number;
+    limit: number;
 }
 
-/**
- * @prop {string[]} suggestions Suggestions list.
- */
 interface IState {
-    suggestions: any[];
+    suggestions?: any[];
+    index?: number;
 }
 
 class Autocomplete extends React.Component<IProps, IState> {
-    state = { suggestions: [] };
+    state = { suggestions: [], index: undefined };
     timer = 0;
+
+    componentWillReceiveProps(nextProps: IProps) {
+        if(nextProps.suggestions !== this.props.suggestions) {
+            this.setState({suggestions: nextProps.suggestions.slice(0, this.props.limit), index: undefined});
+        }
+    };
 
     clearAutocomplete = () => {
         this.setState({ suggestions: [] })
     };
 
-    selectValue = (suggestion) => {
+    selectValue = (suggestion: any) => {
         this.clearAutocomplete();
         this.handleSelect(suggestion)
-    }
-
-    handleSelect = (suggestion) => {
-        this.props.onSelect ? this.props.onSelect(suggestion) : this.props.onChange(suggestion)
     };
 
-    getActiveItem = () => {
-        return this.state.suggestions.find(item => item.active)
+    handleSelect = (suggestion: any) => {
+        this.props.onSelect ? this.props.onSelect(suggestion) : this.props.onChange(suggestion.name)
     };
 
-    selectActiveItemAtIndex = (index) => {
-        const suggestion = this.state.suggestions.find(item => item.index === index);
+    selectActiveItemAtIndex = (index: number) => {
+        const suggestion = this.state.suggestions[index];
         this.setActiveItemAtIndex(index);
-        this.props.onChange(suggestion)
+        this.setState({index});
+        this.props.onChange(suggestion.name)
     };
 
-    handleEnterKey() {
-        const activeItem = this.getActiveItem();
-        if (activeItem !== undefined) {
-            this.selectValue(activeItem)
+    handleEnterKey = () => {
+        const index = this.state.index;
+        if (index !== undefined) {
+            this.selectValue(this.state.suggestions[index])
         }
-    }
+    };
 
-    handleDownKey() {
-        const activeItem = this.getActiveItem();
-        if (activeItem === undefined) {
+    handleDownKey = () => {
+        const index = this.state.index;
+        if (index === undefined) {
             this.selectActiveItemAtIndex(0)
         } else {
-            const nextIndex = (activeItem.index + 1) % this.state.suggestions.length
+            const nextIndex = (index + 1) % this.state.suggestions.length;
             this.selectActiveItemAtIndex(nextIndex)
         }
-    }
+    };
 
-    handleUpKey() {
-        const activeItem = this.getActiveItem()
-        if (activeItem === undefined) {
+    handleUpKey = () => {
+        const index = this.state.index;
+        if (index === undefined) {
             this.selectActiveItemAtIndex(this.state.suggestions.length - 1)
         } else {
-            let prevIndex
-            if (activeItem.index === 0) {
+            let prevIndex;
+            if (index === 0) {
                 prevIndex = this.state.suggestions.length - 1
             } else {
-                prevIndex = (activeItem.index - 1) % this.state.suggestions.length
+                prevIndex = (index - 1) % this.state.suggestions.length
             }
             this.selectActiveItemAtIndex(prevIndex)
         }
-    }
+    };
 
     handleInputKeyDown = (event) => {
-        const ARROW_UP = 38
-        const ARROW_DOWN = 40
-        const ENTER_KEY = 13
-        const ESC_KEY = 27
+        const ARROW_UP = 38;
+        const ARROW_DOWN = 40;
+        const ENTER_KEY = 13;
+        const ESC_KEY = 27;
 
         switch (event.keyCode) {
             case ENTER_KEY:
@@ -96,25 +95,25 @@ class Autocomplete extends React.Component<IProps, IState> {
                 this.handleEnterKey();
                 break;
             case ARROW_DOWN:
-                event.preventDefault(); // prevent the cursor from moving
+                event.preventDefault();
                 this.handleDownKey();
                 break;
             case ARROW_UP:
-                event.preventDefault(); // prevent the cursor from moving
+                event.preventDefault();
                 this.handleUpKey();
                 break;
             case ESC_KEY:
                 this.clearAutocomplete();
                 break
         }
-    }
+    };
 
     setActiveItemAtIndex = (index) => {
-        const suggestions = this.state.suggestions.map((item, idx) => {
-            if (idx === index) {
-                return Object.assign({},{item, active: true })
+        const suggestions = this.state.suggestions.map((item, key) => {
+            if (key === index) {
+                return Object.assign({}, item, { active: true })
             } else {
-                return Object.assign({},{item, active: false })
+                return Object.assign({}, item, { active: false })
             }
         });
         this.setState({suggestions});
@@ -148,25 +147,23 @@ class Autocomplete extends React.Component<IProps, IState> {
     renderAutocomplete = () => {
         const { suggestions } = this.state;
         if (suggestions.length === 0) { return null }
-
         return (
             <div
-                className={this.props.classNames.autocompleteContainer || ''}
                 style={defaultStyles.autocompleteContainer}
             >
                 {suggestions.map((p, key) => (
                     <div
                         key={key}
-                        onMouseOver={() => this.setActiveItemAtIndex(p.index)}
-                        onMouseDown={() => this.selectValue(p.suggestion)}
+                        onMouseOver={() => this.setActiveItemAtIndex(key)}
+                        onMouseDown={() => this.selectValue(p)}
                         style={Object.assign({}, defaultStyles.autocompleteItem, this.autocompleteItemStyle(p.active))}
                     >
-                        {p.suggestion}
+                        {p.name}
                     </div>
                 ))}
             </div>
         )
-    }
+    };
 
     renderInput = () => {
         const { classNames, placeholder, value, inputName, inputId } = this.props;
@@ -175,6 +172,7 @@ class Autocomplete extends React.Component<IProps, IState> {
                 type="text"
                 placeholder={placeholder}
                 className={classNames || ''}
+                style={defaultStyles.autocompleteInput}
                 value={value}
                 onChange={this.handleChange}
                 onKeyDown={this.handleInputKeyDown}
@@ -183,7 +181,7 @@ class Autocomplete extends React.Component<IProps, IState> {
                 id={inputId || ''}
             />
         )
-    }
+    };
 
     render() {
         const { classNames } = this.props;
